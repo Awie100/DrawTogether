@@ -1,0 +1,26 @@
+<body>
+    <center>
+        <div>
+            <canvas id="canvas" width="600" height="600" style="border: 5px solid black;"></canvas>
+        </div>
+        <br>
+        <div>
+            <input type="text" id="inputBox" placeholder="ID"></input>
+            <button onclick="initPlayer();">Init</button>
+            <button onclick="joinRoom();">Join</button>
+            <button onclick="createRoom();">Create</button>
+            <span id="status">status</span>
+        </div>
+        <br>
+        <div>
+            <button onclick="changeColor('#ffff00')">Yellow</button>
+            <button onclick="changeColor('#0000ff')">Blue</button>
+            <button onclick="changeColor('#ff0000')">Red</button>
+            <button onclick="changeColor('#000000')">Black</button>
+            <button id="fillButton" onclick="fillToggle()">Fill (off)</button>
+        </div>
+    </center>
+</body>
+
+<script src="https://unpkg.com/peerjs@1.3.2/dist/peerjs.min.js"></script>
+<script src="./index.js"></script>
