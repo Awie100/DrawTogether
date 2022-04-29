@@ -10,6 +10,10 @@ ctx.lineCap = "round";
 ctx.fillStyle = 'white';
 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+const colorList = ['#000000', '#ff0000', '#ff6600', '#ffff00', '#00ff00', '#0000ff', '#cc00ff', '#ffffff'];
+const buttonListContainer = document.getElementsByClassName("color-button-list")[0];
+const buttonList = [];
+
 var lastPeerId = null;
 var peer = null;
 var peerId = null;
@@ -24,10 +28,26 @@ var filling = false;
 var brushSize = 10;
 var brush = null;
 
-makeBrush(brushSize, drawColor);
-
 ctx.fillStyle = 'white';
 ctx.fillRect(0, 0, canvas.width, canvas.height);
+populateButtons();
+
+function populateButtons() {
+    colorList.forEach(col => {
+        const button = document.createElement("button");
+        button.classList.add("color-button");
+        button.style.backgroundColor = col;
+        button.addEventListener("click", () => {
+            changeColor(col);
+            setActiveColor(col);
+        });
+
+        buttonList.push(button);
+        buttonListContainer.appendChild(button);
+    });
+
+    buttonList[0].click();
+}
 
 function initPlayer() {
     // Create own peer object with connection to shared PeerJS server
@@ -35,7 +55,7 @@ function initPlayer() {
         debug: 2
     });
 
-    peer.on('open', function (id) {
+    peer.on('open', function(id) {
         // Workaround for peer.reconnect deleting previous id
         if (peer.id === null) {
             peer.id = lastPeerId;
@@ -45,11 +65,11 @@ function initPlayer() {
         statusMsg.innerHTML = "ID: " + peer.id;
     });
 
-    peer.on('connection', function (c) {
-        if(admin && admin === peer.id) {
+    peer.on('connection', function(c) {
+        if (admin && admin === peer.id) {
 
             c.on('open', function() {
-                if(backup === null) {
+                if (backup === null) {
                     backup = c.peer;
                 }
 
@@ -65,16 +85,16 @@ function initPlayer() {
                 signal(data);
             });
 
-            c.on('data', function (data) {
+            c.on('data', function(data) {
                 signal(data);
                 handleData(data);
             });
 
-            c.on('close', function () {
+            c.on('close', function() {
                 statusMsg.innerHTML = c.peer + " left";
                 conn = conn.filter(elem => elem.peer !== c.peer);
-                if(c.peer === backup) {
-                    if(conn.length > 0) {
+                if (c.peer === backup) {
+                    if (conn.length > 0) {
                         backup = conn[0].peer;
                     } else {
                         backup = null;
@@ -92,7 +112,7 @@ function initPlayer() {
             c.on('open', function() {
                 var data;
 
-                if(admin) {
+                if (admin) {
                     data = {
                         name: "admin_set",
                         admin: admin,
@@ -109,7 +129,7 @@ function initPlayer() {
         }
     });
 
-    peer.on('disconnected', function () {
+    peer.on('disconnected', function() {
         peer.id = lastPeerId;
         peer._lastServerId = lastPeerId;
         peer.reconnect();
@@ -125,7 +145,7 @@ function initPlayer() {
         });
     })
 
-    peer.on('error', function (err) {
+    peer.on('error', function(err) {
         if (err.type === 'invalid-id') {
             statusMsg.innerHTML = "Error: Invalid ID";
         } else if (err.type === 'unavailable-id') {
@@ -142,7 +162,7 @@ function initPlayer() {
 };
 
 function joinRoom() {
-    join("awie100-" +inputBox.value);
+    join("awie100-" + inputBox.value);
 }
 
 function join(id) {
@@ -153,22 +173,22 @@ function join(id) {
 
     var c = peer.connect(id);
 
-    c.on('open', function () {
+    c.on('open', function() {
         statusMsg.innerHTML = "Connected to: " + c.peer;
     });
 
-    c.on('data', function (data) {
+    c.on('data', function(data) {
         handleData(data);
     });
 
-    c.on('close', function () {
+    c.on('close', function() {
         statusMsg.innerHTML = "Connection closed";
         conn = [];
-        if(c.peer === admin) {
+        if (c.peer === admin) {
             admin = backup;
             backup = null;
 
-            if(peer.id !== admin) {
+            if (peer.id !== admin) {
                 join(admin);
             }
         }
@@ -194,7 +214,7 @@ function createRoom() {
 function handleData(data) {
     switch (data.name) {
         case 'draw':
-            const blob = new Blob([new Uint8Array(data.img)], {type: "image/png"});
+            const blob = new Blob([new Uint8Array(data.img)], { type: "image/png" });
             draw(data.lastPos, data.pos, blob);
             break;
         case "fill":
@@ -224,8 +244,8 @@ function handleData(data) {
 
 canvas.addEventListener('mousemove', (evt) => {
 
-    if(mousepressed && mouseoncanvas && !filling){
-        const mousePos = getMousePosCanvas(evt) 
+    if (mousepressed && mouseoncanvas && !filling) {
+        const mousePos = getMousePosCanvas(evt)
         draw(lastMousePos, mousePos, brush);
 
         const data = {
@@ -242,7 +262,7 @@ canvas.addEventListener('mousemove', (evt) => {
 
 canvas.addEventListener('mousedown', (evt) => {
     mousepressed = true;
-    if(filling && mouseoncanvas) {
+    if (filling && mouseoncanvas) {
         const mousePos = getMousePosCanvas(evt);
         const intPos = {
             x: parseInt(mousePos.x),
@@ -277,20 +297,21 @@ canvas.addEventListener('mouseleave', (evt) => {
 });
 
 async function draw(lastPos, pos, blob) {
-    if(lastPos === null) {
+    if (lastPos === null) {
         return;
     }
 
-    var img = new Image;
+    const img = new Image;
 
-    img.onload = () => {const dy = (pos.y - lastPos.y);
+    img.onload = () => {
+        const dy = (pos.y - lastPos.y);
         const dx = (pos.x - lastPos.x);
-    
-        const dist = Math.sqrt(dx*dx + dy*dy); // length of line
+
+        const dist = Math.sqrt(dx * dx + dy * dy); // length of line
         for (let i = 0; i < dist; i++) {
-            ctx.drawImage( img,
-                Math.round(lerp(lastPos.x, pos.x, i/dist) - img.width / 2),
-                Math.round(lerp(lastPos.y, pos.y, i/dist) - img.height / 2)
+            ctx.drawImage(img,
+                Math.round(lerp(lastPos.x, pos.x, i / dist) - img.width / 2),
+                Math.round(lerp(lastPos.y, pos.y, i / dist) - img.height / 2)
             );
         }
     };
@@ -299,20 +320,20 @@ async function draw(lastPos, pos, blob) {
 }
 
 function makeBrush(r, col) {
-    var offscreen = new OffscreenCanvas(2*r, 2*r);
+    var offscreen = new OffscreenCanvas(2 * r, 2 * r);
     var offctx = offscreen.getContext('2d');
-    var imgData = new ImageData(2*r, 2*r);
+    var imgData = new ImageData(2 * r, 2 * r);
     var data = imgData.data;
 
-    const r1 = parseInt(col.substr(1,2),16);
-    const g1 = parseInt(col.substr(3,2),16);
-    const b1 = parseInt(col.substr(5,2),16);
+    const r1 = parseInt(col.substr(1, 2), 16);
+    const g1 = parseInt(col.substr(3, 2), 16);
+    const b1 = parseInt(col.substr(5, 2), 16);
 
 
-    for (let i = 0; i < data.length; i+=4) {
-        const y = (i / 4) / (2*r) - r;
-        const x = (i / 4) % (2*r) - r;
-        if(x*x + y*y <= r*r) {
+    for (let i = 0; i < data.length; i += 4) {
+        const y = (i / 4) / (2 * r) - r;
+        const x = (i / 4) % (2 * r) - r;
+        if (x * x + y * y <= r * r) {
             data[i] = r1;
             data[i + 1] = g1;
             data[i + 2] = b1;
@@ -344,6 +365,20 @@ function changeColor(color) {
     makeBrush(brushSize, drawColor);
 }
 
+function setActiveColor(color) {
+    buttonList.forEach(button => {
+        const [r, g, b] = hexToRgb(color);
+        button.classList.toggle("active", button.style.backgroundColor === `rgb(${r}, ${g}, ${b})`);
+    })
+}
+
+function hexToRgb(hexstr) {
+    const r = parseInt(hexstr.substr(1, 2), 16);
+    const g = parseInt(hexstr.substr(3, 2), 16);
+    const b = parseInt(hexstr.substr(5, 2), 16);
+    return [r, g, b];
+}
+
 function drawFill(pos, color) {
     const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     var data = imgData.data;
@@ -352,15 +387,13 @@ function drawFill(pos, color) {
     const height = canvas.height;
     const posPix = (pos.x + width * pos.y) * 4;
     var pixPos = [posPix];
-    const r1 = parseInt(color.substr(1,2),16);
-    const g1 = parseInt(color.substr(3,2),16);
-    const b1 = parseInt(color.substr(5,2),16);
+    const [r1, g1, b1] = hexToRgb(color);
 
     const r2 = data[posPix];
     const g2 = data[posPix + 1];
     const b2 = data[posPix + 2];
 
-    if(colorCompare(r1, g1, b1, r2, g2, b2)) {
+    if (colorCompare(r1, g1, b1, r2, g2, b2)) {
         return;
     }
 
@@ -376,24 +409,24 @@ function drawFill(pos, color) {
             const leftPos = posPix - 4;
             const rightPos = posPix + 4;
 
-            if((posPix / 4 > width) && colorCompare(data[upPos], data[upPos + 1], data[upPos + 2], r2, g2, b2)) {
+            if ((posPix / 4 > width) && colorCompare(data[upPos], data[upPos + 1], data[upPos + 2], r2, g2, b2)) {
                 posNext.push(upPos);
             }
 
-            if((posPix / 4 < (width - 1) * height) && colorCompare(data[downPos], data[downPos + 1], data[downPos + 2], r2, g2, b2)) {
+            if ((posPix / 4 < (width - 1) * height) && colorCompare(data[downPos], data[downPos + 1], data[downPos + 2], r2, g2, b2)) {
                 posNext.push(downPos);
             }
 
-            if((posPix / 4 % width > 0) && colorCompare(data[leftPos], data[leftPos + 1], data[leftPos + 2], r2, g2, b2)) {
+            if ((posPix / 4 % width > 0) && colorCompare(data[leftPos], data[leftPos + 1], data[leftPos + 2], r2, g2, b2)) {
                 posNext.push(leftPos);
             }
 
-            if((posPix / 4 % width < (width - 1)) && colorCompare(data[rightPos], data[rightPos + 1], data[rightPos + 2], r2, g2, b2)) {
+            if ((posPix / 4 % width < (width - 1)) && colorCompare(data[rightPos], data[rightPos + 1], data[rightPos + 2], r2, g2, b2)) {
                 posNext.push(rightPos);
             }
         });
 
-        pixPos = [... new Set(posNext)];
+        pixPos = [...new Set(posNext)];
     }
 
     ctx.putImageData(imgData, 0, 0);

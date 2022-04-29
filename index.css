@@ -1,0 +1,23 @@
+.color-button {
+    border: none;
+    height: 50px;
+    width: 50px;
+    border-radius: 8px;
+    margin: 5px;
+    vertical-align: middle;
+    font-weight: bold;
+}
+
+.color-button.active {
+    outline: 3px outset #88ffff;
+}
+
+.color-button-list {
+    padding: 10px 10px;
+    background-color: #88ffff;
+    width: max-content;
+}
+
+body {
+    background-color: lightblue;
+}

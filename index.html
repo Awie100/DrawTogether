@@ -1,3 +1,7 @@
+<head>
+    <link rel="stylesheet" href="index.css">
+</head>
+
 <body>
     <center>
         <div>
@@ -12,13 +16,8 @@
             <span id="status">status</span>
         </div>
         <br>
-        <div>
-            <button onclick="changeColor('#ffff00')">Yellow</button>
-            <button onclick="changeColor('#0000ff')">Blue</button>
-            <button onclick="changeColor('#ff0000')">Red</button>
-            <button onclick="changeColor('#000000')">Black</button>
-            <button id="fillButton" onclick="fillToggle()">Fill (off)</button>
-        </div>
+        <div class="color-button-list">
+            <button class="color-button" style="border: 3px solid black;" id="fillButton" onclick="fillToggle()">Fill (off)</button>
     </center>
 </body>
 
