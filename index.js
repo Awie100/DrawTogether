@@ -301,9 +301,7 @@ async function draw(lastPos, pos, blob) {
         return;
     }
 
-    const img = new Image;
-
-    img.onload = () => {
+    createImageBitmap(blob).then((img) => {
         const dy = (pos.y - lastPos.y);
         const dx = (pos.x - lastPos.x);
 
@@ -314,9 +312,7 @@ async function draw(lastPos, pos, blob) {
                 Math.round(lerp(lastPos.y, pos.y, i / dist) - img.height / 2)
             );
         }
-    };
-
-    img.src = URL.createObjectURL(blob);
+    });
 }
 
 function makeBrush(r, col) {
